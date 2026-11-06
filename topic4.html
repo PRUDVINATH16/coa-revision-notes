@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serial I/O &amp; Transmission · Exam Notes</title>
+    <style>
+        /* Blue & White theme — clean, exam-ready */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f8fcff 0%, #e6f2ff 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #0a2b4e;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 80, 200, 0.25),
+                        0 6px 18px -8px rgba(0, 60, 130, 0.15),
+                        inset 0 1px 0 #ffffff;
+            border: 1px solid #cde3ff;
+            padding: 2rem 2.2rem 2.4rem;
+            transition: all 0.2s;
+        }
+
+        /* accent bar */
+        .note-card::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #1a6eff;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #003b8f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.45rem;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #1a6eff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(26, 110, 255, 0.3);
+        }
+
+        .story {
+            background: #e9f2ff;
+            border-left: 8px solid #1a6eff;
+            padding: 1.2rem 1.7rem;
+            border-radius: 0 18px 18px 0;
+            margin: 1.5rem 0 1.8rem 0;
+            font-weight: 500;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            color: #0040a0;
+            box-shadow: 0 4px 12px rgba(0, 60, 140, 0.08);
+            transition: 0.1s;
+        }
+
+        .story strong {
+            color: #002b6b;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00337a;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d6ff 20%, #ffffff 100%);
+            border-radius: 2px;
+            min-width: 40px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b4b9e;
+            margin-top: 1.8rem;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 i {
+            font-style: normal;
+            background: #d6e8ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0047b3;
+        }
+
+        /* term list styling */
+        .terms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            background: #f9fcff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border: 1px solid #d0e3ff;
+            transition: 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 80, 180, 0.03);
+        }
+
+        .term-item:hover {
+            background: #edf5ff;
+            border-color: #97c1ff;
+        }
+
+        .term-badge {
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            min-width: 100px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .term-def {
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #002856;
+            font-weight: 450;
+        }
+
+        .term-def strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* key points card */
+        .key-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.2rem 1.5rem 1.4rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 10px 20px -10px #003b8f33;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .key-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.5rem;
+        }
+
+        .key-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .key-card ul li {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #003174;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .key-card ul li::before {
+            content: '▹';
+            color: #1a6eff;
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .key-card ul li strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* formula highlight */
+        .formula-box {
+            background: #f0f7ff;
+            border-radius: 16px;
+            padding: 0.9rem 1.4rem;
+            margin: 1rem 0 0.2rem;
+            border: 1px dashed #7fb3ff;
+            font-weight: 600;
+            color: #00337a;
+            font-size: 0.98rem;
+            box-shadow: 0 4px 10px rgba(0, 80, 200, 0.05);
+        }
+
+        .formula-box span {
+            background: #1a6eff;
+            color: white;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-left: 8px;
+        }
+
+        /* UART architecture grid */
+        .uart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .uart-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b8d6ff;
+            box-shadow: 0 6px 14px -8px rgba(0, 80, 200, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .uart-card:hover {
+            border-color: #1a6eff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px #1a6eff66;
+        }
+
+        .uart-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .uart-card p {
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: #003174;
+        }
+
+        /* comparison table */
+        .comp-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            margin: 1.2rem 0 1rem;
+        }
+
+        .comp-table th {
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #00337a;
+            padding: 0.6rem 1rem;
+            background: #e9f2ff;
+            border-radius: 12px;
+        }
+
+        .comp-table th:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .comp-table th:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .comp-table td {
+            background: #ffffff;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            color: #003174;
+            border-top: 1px solid #e3efff;
+            border-bottom: 1px solid #e3efff;
+        }
+
+        .comp-table td:first-child {
+            border-left: 1px solid #e3efff;
+            border-radius: 12px 0 0 12px;
+            font-weight: 600;
+            color: #003b8f;
+        }
+
+        .comp-table td:last-child {
+            border-right: 1px solid #e3efff;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .comp-table tr:hover td {
+            background: #f4f9ff;
+        }
+
+        /* golden rule — serial I/O focus */
+        .golden-rule {
+            background: #003b8f;
+            color: white;
+            border-radius: 22px;
+            padding: 1.4rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 16px 28px -12px #003b8f99,
+                        inset 0 1px 0 #ffffff40;
+            border: 1px solid #7fb3ff;
+        }
+
+        .golden-rule .shield {
+            background: #ffffff20;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #b8d6ff;
+            border: 1px solid #8bb8ff;
+        }
+
+        .golden-rule p {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: white;
+            margin: 0;
+        }
+
+        .golden-rule p span {
+            background: #ffd966;
+            color: #003b8f;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* small divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, #c2dbff, #ffffff);
+            margin: 1.8rem 0 0.5rem;
+        }
+
+        /* responsive fine-tune */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .note-card {
+                padding: 1.6rem 1.2rem 1.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .story {
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            .term-item {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .term-badge {
+                min-width: auto;
+                align-self: flex-start;
+            }
+            .golden-rule {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.3rem 1.5rem;
+            }
+            .golden-rule p {
+                font-size: 1rem;
+            }
+            .comp-table th,
+            .comp-table td {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.85rem;
+            }
+            .comp-table td:first-child,
+            .comp-table td:last-child {
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="note-card">
+        <h1>📝 Serial I/O &amp; Transmission <span>Topic 4</span></h1>
+
+        <!-- 1-sentence story -->
+        <div class="story">
+            <strong>The 1-Sentence Story:</strong> Serial I/O transmits data one bit at a time over a single wire, using either asynchronous start/stop framing or synchronous block transmission, with hardware like UARTs and shift registers handling the parallel-to-serial conversion.
+        </div>
+
+        <!-- definitions -->
+        <h2>📌 Definitions &amp; Key Terms</h2>
+        <div class="terms-grid">
+            <div class="term-item">
+                <div class="term-badge">Serial I/O</div>
+                <div class="term-def">Transmission of data one bit at a time over a single communication line. Requires fewer wires, suitable for long distances.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Parallel Transfer</div>
+                <div class="term-def">Transmission of multiple bits simultaneously over multiple data lines. Fast but expensive and prone to interference over long distances.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Shift Register</div>
+                <div class="term-def">Hardware used to convert parallel data (from the CPU bus) to serial data (for the device line) and vice versa.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">UART</div>
+                <div class="term-def">Universal Asynchronous Receiver/Transmitter. Hardware that performs serial-to-parallel and parallel-to-serial conversion using the asynchronous start-stop format.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">USART</div>
+                <div class="term-def">Universal Synchronous/Asynchronous Receiver/Transmitter. Supports both synchronous and asynchronous modes.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Baud Rate</div>
+                <div class="term-def">The number of symbols transmitted per second.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Bit Rate</div>
+                <div class="term-def">The number of bits transmitted per second. <strong>Bit Rate = Baud Rate × bits per symbol</strong>.</div>
+            </div>
+        </div>
+
+        <!-- asynchronous serial transmission -->
+        <h2>⏳ Asynchronous Serial Transmission <i>(Start-Stop)</i></h2>
+        <div class="key-card">
+            <h4>🔹 Frame Structure &amp; Synchronization</h4>
+            <ul>
+                <li><strong>Idle State:</strong> Line is held at logic 1.</li>
+                <li><strong>Start Bit:</strong> Logic 0. The transition from 1 to 0 signals the beginning of a character.</li>
+                <li><strong>Data Bits:</strong> 6–8 bits of actual data.</li>
+                <li><strong>Parity Bit (optional):</strong> For error checking.</li>
+                <li><strong>Stop Bit(s):</strong> Logic 1, marks the end of the character.</li>
+                <li><strong>Receiver Synchronization:</strong> Uses a local clock at 16× the transmission rate. The counter is reset on the Start bit's leading edge. The receiver samples bits near their centers (at 8 ticks) to avoid edge noise. Re-synchronizes at every Start bit.</li>
+            </ul>
+        </div>
+
+        <!-- synchronous serial transmission -->
+        <h2>🔄 Synchronous Serial Transmission</h2>
+        <div class="key-card">
+            <h4>🔹 Block Transmission &amp; Clock Recovery</h4>
+            <ul>
+                <li>Data transmitted in <strong>blocks</strong> (hundreds/thousands of bits) instead of small characters.</li>
+                <li>No Start/Stop bits per byte (more efficient).</li>
+                <li>Receiver recovers timing from signal transitions (<strong>clock recovery</strong>).</li>
+                <li>Beginnings/ends of blocks marked by synchronization codes.</li>
+                <li>Suitable for high-speed communication.</li>
+            </ul>
+        </div>
+
+        <!-- UART architecture -->
+        <h2>⚙️ UART Internal Architecture <i>(Key Registers)</i></h2>
+        <div class="uart-grid">
+            <div class="uart-card">
+                <h4>DATAIN</h4>
+                <p>Holds received data (parallel) for the CPU to read.</p>
+            </div>
+            <div class="uart-card">
+                <h4>DATAOUT</h4>
+                <p>Holds data (parallel) from the CPU to be transmitted.</p>
+            </div>
+            <div class="uart-card">
+                <h4>Status Register</h4>
+                <p>Contains flags like Data Available, Transmitter Ready, and error flags (parity/framing).</p>
+            </div>
+            <div class="uart-card">
+                <h4>Control Register</h4>
+                <p>Sets baud rate, number of data bits, parity, and stop bits.</p>
+            </div>
+            <div class="uart-card">
+                <h4>Shift Registers</h4>
+                <p>Perform the actual parallel-to-serial (TX) and serial-to-parallel (RX) conversion.</p>
+            </div>
+        </div>
+
+        <!-- comparison table -->
+        <h2>📊 Comparison <i>(Serial vs. Parallel)</i></h2>
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Serial</th>
+                    <th>Parallel</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bits per transfer</td>
+                    <td>One at a time</td>
+                    <td>Multiple simultaneously</td>
+                </tr>
+                <tr>
+                    <td>Wires needed</td>
+                    <td>Few</td>
+                    <td>Many</td>
+                </tr>
+                <tr>
+                    <td>Distance</td>
+                    <td>Long</td>
+                    <td>Short</td>
+                </tr>
+                <tr>
+                    <td>Cost</td>
+                    <td>Low</td>
+                    <td>High</td>
+                </tr>
+                <tr>
+                    <td>Speed</td>
+                    <td>Slower</td>
+                    <td>Faster</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- golden rule — serial I/O focus -->
+        <div class="golden-rule">
+            <div class="shield">🔒 GOLDEN RULE</div>
+            <p><span>One bit at a time</span> keeps wiring simple and distances long — while framing and clock recovery guarantee every bit lands in the right place.</p>
+        </div>
+
+        <!-- subtle divider (styling only) -->
+        <div class="divider"></div>
+    </div>
+</body>
+</html>

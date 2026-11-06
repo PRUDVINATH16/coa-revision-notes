@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallel I/O &amp; Program-Controlled Transfer · Exam Notes</title>
+    <style>
+        /* Blue & White theme — clean, exam-ready */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f8fcff 0%, #e6f2ff 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #0a2b4e;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 80, 200, 0.25),
+                        0 6px 18px -8px rgba(0, 60, 130, 0.15),
+                        inset 0 1px 0 #ffffff;
+            border: 1px solid #cde3ff;
+            padding: 2rem 2.2rem 2.4rem;
+            transition: all 0.2s;
+        }
+
+        /* accent bar */
+        .note-card::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #1a6eff;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #003b8f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.45rem;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #1a6eff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(26, 110, 255, 0.3);
+        }
+
+        .story {
+            background: #e9f2ff;
+            border-left: 8px solid #1a6eff;
+            padding: 1.2rem 1.7rem;
+            border-radius: 0 18px 18px 0;
+            margin: 1.5rem 0 1.8rem 0;
+            font-weight: 500;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            color: #0040a0;
+            box-shadow: 0 4px 12px rgba(0, 60, 140, 0.08);
+            transition: 0.1s;
+        }
+
+        .story strong {
+            color: #002b6b;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00337a;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d6ff 20%, #ffffff 100%);
+            border-radius: 2px;
+            min-width: 40px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b4b9e;
+            margin-top: 1.8rem;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 i {
+            font-style: normal;
+            background: #d6e8ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0047b3;
+        }
+
+        /* term list styling */
+        .terms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            background: #f9fcff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border: 1px solid #d0e3ff;
+            transition: 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 80, 180, 0.03);
+        }
+
+        .term-item:hover {
+            background: #edf5ff;
+            border-color: #97c1ff;
+        }
+
+        .term-badge {
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            min-width: 140px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .term-def {
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #002856;
+            font-weight: 450;
+        }
+
+        .term-def strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* key points card */
+        .key-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.2rem 1.5rem 1.4rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 10px 20px -10px #003b8f33;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .key-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.5rem;
+        }
+
+        .key-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .key-card ul li {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #003174;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .key-card ul li::before {
+            content: '▹';
+            color: #1a6eff;
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .key-card ul li strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* register grid */
+        .reg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .reg-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b8d6ff;
+            box-shadow: 0 6px 14px -8px rgba(0, 80, 200, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .reg-card:hover {
+            border-color: #1a6eff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px #1a6eff66;
+        }
+
+        .reg-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .reg-card p {
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: #003174;
+        }
+
+        /* flag highlight */
+        .flag-highlight {
+            background: #f0f7ff;
+            border-radius: 16px;
+            padding: 0.9rem 1.4rem;
+            margin: 1rem 0 0.2rem;
+            border: 1px dashed #7fb3ff;
+            font-weight: 600;
+            color: #00337a;
+            font-size: 0.98rem;
+            box-shadow: 0 4px 10px rgba(0, 80, 200, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 2rem;
+        }
+
+        .flag-highlight span {
+            background: #1a6eff;
+            color: white;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        /* operation example card */
+        .example-card {
+            background: #f9fcff;
+            border-radius: 18px;
+            padding: 1rem 1.4rem;
+            margin: 0.8rem 0;
+            border-left: 6px solid #1a6eff;
+            box-shadow: 0 4px 10px rgba(0, 60, 140, 0.05);
+        }
+
+        .example-card h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .example-card ol {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding-left: 0;
+            counter-reset: ex-counter;
+        }
+
+        .example-card ol li {
+            font-size: 0.93rem;
+            line-height: 1.45;
+            color: #003174;
+            padding-left: 1.8rem;
+            position: relative;
+            counter-increment: ex-counter;
+        }
+
+        .example-card ol li::before {
+            content: counter(ex-counter) ".";
+            position: absolute;
+            left: 0;
+            color: #1a6eff;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* polling flow */
+        .polling-flow {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 1.2rem 1.5rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 8px 18px -10px #003b8f33;
+            margin: 1rem 0 1.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.6rem 1.2rem;
+            font-weight: 600;
+            color: #00337a;
+            font-size: 0.98rem;
+        }
+
+        .polling-flow .step {
+            background: #e9f2ff;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            color: #0047b3;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 80, 200, 0.08);
+        }
+
+        .polling-flow .arrow {
+            color: #1a6eff;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .polling-flow .decision {
+            background: #d6e8ff;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            color: #00337a;
+            font-weight: 700;
+        }
+
+        /* warning card (disadvantage) */
+        .warn-card {
+            background: #fff8e6;
+            border-radius: 18px;
+            padding: 1rem 1.4rem;
+            border-left: 6px solid #d4a017;
+            margin: 1.2rem 0 0.5rem;
+            color: #664d00;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(200, 150, 0, 0.08);
+        }
+
+        .warn-card strong {
+            color: #4d3a00;
+        }
+
+        /* exam point card */
+        .exam-point {
+            background: #003b8f;
+            color: white;
+            border-radius: 22px;
+            padding: 1.4rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 16px 28px -12px #003b8f99,
+                        inset 0 1px 0 #ffffff40;
+            border: 1px solid #7fb3ff;
+        }
+
+        .exam-point .shield {
+            background: #ffffff20;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #b8d6ff;
+            border: 1px solid #8bb8ff;
+        }
+
+        .exam-point p {
+            font-size: 1.12rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: white;
+            margin: 0;
+        }
+
+        .exam-point p span {
+            background: #ffd966;
+            color: #003b8f;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* small divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, #c2dbff, #ffffff);
+            margin: 1.8rem 0 0.5rem;
+        }
+
+        /* responsive fine-tune */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .note-card {
+                padding: 1.6rem 1.2rem 1.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .story {
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            .term-item {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .term-badge {
+                min-width: auto;
+                align-self: flex-start;
+            }
+            .exam-point {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.3rem 1.5rem;
+            }
+            .exam-point p {
+                font-size: 1rem;
+            }
+            .polling-flow {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="note-card">
+        <h1>📝 Parallel I/O &amp; Program-Controlled Transfer <span>Topic 5</span></h1>
+
+        <!-- 1-sentence story -->
+        <div class="story">
+            <strong>The 1-Sentence Story:</strong> Parallel I/O uses interface circuits with data and status registers to connect devices to the bus, but program-controlled I/O forces the CPU to wastefully "poll" (repeatedly check) the device status until it is ready to transfer data.
+        </div>
+
+        <!-- definitions -->
+        <h2>📌 Definitions &amp; Key Terms</h2>
+        <div class="terms-grid">
+            <div class="term-item">
+                <div class="term-badge">I/O Interface</div>
+                <div class="term-def">Circuitry that connects an I/O device to the bus, providing address decoding, data buffering, status flags, and timing control.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Port</div>
+                <div class="term-def">The device side of the I/O interface (e.g., a Parallel Port or Serial Port).</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Program-Controlled I/O</div>
+                <div class="term-def">The processor controls the I/O operation explicitly through program instructions (checking status, waiting, and then transferring data).</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Polling</div>
+                <div class="term-def">The process where the processor repeatedly checks an I/O device's status flag to see if it is ready.</div>
+            </div>
+        </div>
+
+        <!-- interface registers -->
+        <h2>🧩 Interface Registers <i>(Exam Favorite)</i></h2>
+        <div class="reg-grid">
+            <div class="reg-card">
+                <h4>DATAIN</h4>
+                <p>Holds input data from the device. Read by the CPU.</p>
+            </div>
+            <div class="reg-card">
+                <h4>DATAOUT</h4>
+                <p>Holds output data from the CPU to be sent to the device.</p>
+            </div>
+            <div class="reg-card">
+                <h4>Control Register</h4>
+                <p>Configures interface settings (e.g., baud rate, data format).</p>
+            </div>
+        </div>
+
+        <div class="flag-highlight">
+            <div><span>SIN</span> Status Input: 1 = Data available to read; 0 = No new data.</div>
+            <div><span>SOUT</span> Status Output: 1 = Device ready to accept data; 0 = Device busy/not ready.</div>
+        </div>
+
+        <!-- parallel port operation examples -->
+        <h2>🖥️ Parallel Port Operation</h2>
+
+        <div class="example-card">
+            <h5>⌨️ Keyboard Input Example</h5>
+            <ol>
+                <li>Key pressed → Encoder generates code.</li>
+                <li>Code is loaded into <code>DATAIN</code>.</li>
+                <li><code>SIN</code> flag is set to 1 (data available).</li>
+                <li>CPU checks <code>SIN</code>, reads <code>DATAIN</code>, and <code>SIN</code> clears to 0.</li>
+            </ol>
+        </div>
+
+        <div class="example-card">
+            <h5>🖨️ Printer Output Example</h5>
+            <ol>
+                <li>Printer is ready → asserts Idle signal.</li>
+                <li>Interface sets <code>SOUT</code> flag to 1.</li>
+                <li>CPU checks <code>SOUT</code>, writes data to <code>DATAOUT</code>.</li>
+                <li>Loading <code>DATAOUT</code> clears <code>SOUT</code> to 0.</li>
+                <li>Interface asserts Valid signal → printer accepts data.</li>
+                <li>Printer finishes → asserts Idle again.</li>
+            </ol>
+        </div>
+
+        <!-- polling concept -->
+        <h2>🔄 Polling <i>(Key Concept)</i></h2>
+
+        <div class="polling-flow">
+            <span class="step">Check Status</span>
+            <span class="arrow">→</span>
+            <span class="decision">Is Device Ready?</span>
+            <span class="arrow">→</span>
+            <span class="step">(No) Check Again</span>
+            <span class="arrow">→</span>
+            <span class="step">(Yes) Transfer Data</span>
+        </div>
+
+        <div class="warn-card">
+            <strong>⚠️ Major Disadvantage (CPU Time Wastage):</strong> The CPU is occupied in a loop checking the status flag instead of performing useful computation. It must wait for the slow I/O device.
+        </div>
+
+        <!-- exam point -->
+        <div class="exam-point">
+            <div class="shield">📌 EXAM POINT</div>
+            <p><span>Memory transfers</span> are predictable (data is always ready), but I/O devices are unpredictable. Program-controlled I/O uses polling to handle this unpredictability, but at the cost of CPU efficiency.</p>
+        </div>
+
+        <!-- subtle divider (styling only) -->
+        <div class="divider"></div>
+    </div>
+</body>
+</html>

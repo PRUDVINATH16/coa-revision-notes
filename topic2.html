@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Performance & Architecture · Exam Notes</title>
+    <style>
+        /* Blue & White theme — clean, exam-ready */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f8fcff 0%, #e6f2ff 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #0a2b4e;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 80, 200, 0.25),
+                        0 6px 18px -8px rgba(0, 60, 130, 0.15),
+                        inset 0 1px 0 #ffffff;
+            border: 1px solid #cde3ff;
+            padding: 2rem 2.2rem 2.4rem;
+            transition: all 0.2s;
+        }
+
+        /* accent bar */
+        .note-card::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #1a6eff;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #003b8f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.45rem;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #1a6eff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(26, 110, 255, 0.3);
+        }
+
+        .story {
+            background: #e9f2ff;
+            border-left: 8px solid #1a6eff;
+            padding: 1.2rem 1.7rem;
+            border-radius: 0 18px 18px 0;
+            margin: 1.5rem 0 1.8rem 0;
+            font-weight: 500;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            color: #0040a0;
+            box-shadow: 0 4px 12px rgba(0, 60, 140, 0.08);
+            transition: 0.1s;
+        }
+
+        .story strong {
+            color: #002b6b;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00337a;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d6ff 20%, #ffffff 100%);
+            border-radius: 2px;
+            min-width: 40px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b4b9e;
+            margin-top: 1.8rem;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 i {
+            font-style: normal;
+            background: #d6e8ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0047b3;
+        }
+
+        /* term list styling */
+        .terms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            background: #f9fcff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border: 1px solid #d0e3ff;
+            transition: 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 80, 180, 0.03);
+        }
+
+        .term-item:hover {
+            background: #edf5ff;
+            border-color: #97c1ff;
+        }
+
+        .term-badge {
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            min-width: 120px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .term-def {
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #002856;
+            font-weight: 450;
+        }
+
+        .term-def strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* factors grid / cards */
+        .factor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.2rem 0 1.5rem;
+        }
+
+        .factor-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b8d6ff;
+            box-shadow: 0 6px 14px -8px rgba(0, 80, 200, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .factor-card:hover {
+            border-color: #1a6eff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px #1a6eff66;
+        }
+
+        .factor-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .factor-card p {
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: #003174;
+        }
+
+        .factor-card .small-note {
+            font-size: 0.8rem;
+            background: #e9f2ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            display: inline-block;
+            margin-top: 0.6rem;
+            color: #0047b3;
+            font-weight: 500;
+        }
+
+        /* bandwidth formula highlight */
+        .formula-box {
+            background: #f0f7ff;
+            border-radius: 18px;
+            padding: 1rem 1.7rem;
+            margin: 1rem 0 1.6rem;
+            border: 1px dashed #7fb3ff;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 80, 200, 0.05);
+            font-weight: 600;
+            color: #00337a;
+        }
+
+        .formula-box span {
+            background: #1a6eff;
+            color: white;
+            padding: 0.2rem 0.9rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+            margin-left: 8px;
+        }
+
+        /* architecture comparison cards */
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+            margin: 1.2rem 0 1.5rem;
+        }
+
+        .arch-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.2rem 1.3rem 1.4rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 10px 20px -10px #003b8f33;
+            transition: 0.15s ease;
+        }
+
+        .arch-card:hover {
+            border-color: #1a6eff;
+            box-shadow: 0 18px 26px -12px #1a6eff55;
+        }
+
+        .arch-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arch-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            margin-top: 0.6rem;
+        }
+
+        .arch-card ul li {
+            font-size: 0.93rem;
+            line-height: 1.4;
+            color: #003174;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .arch-card ul li::before {
+            content: '•';
+            color: #1a6eff;
+            font-weight: 900;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        /* arbitration steps (numbered) */
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin: 1.2rem 0 1.5rem;
+            counter-reset: step-counter;
+        }
+
+        .steps-list li {
+            list-style: none;
+            background: #ffffff;
+            padding: 0.85rem 1.4rem 0.85rem 3.2rem;
+            border-radius: 16px;
+            border: 1px solid #cde3ff;
+            font-weight: 500;
+            color: #003174;
+            box-shadow: 0 3px 8px rgba(0, 80, 180, 0.03);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .steps-list li::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 1rem;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px #1a6eff55;
+        }
+
+        .steps-list li strong {
+            color: #00337a;
+            font-weight: 700;
+        }
+
+        /* golden rule banner — adapted for this topic (arbitration emphasis) */
+        .golden-rule {
+            background: #003b8f;
+            color: white;
+            border-radius: 22px;
+            padding: 1.4rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 16px 28px -12px #003b8f99,
+                        inset 0 1px 0 #ffffff40;
+            border: 1px solid #7fb3ff;
+        }
+
+        .golden-rule .shield {
+            background: #ffffff20;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #b8d6ff;
+            border: 1px solid #8bb8ff;
+        }
+
+        .golden-rule p {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: white;
+            margin: 0;
+        }
+
+        .golden-rule p span {
+            background: #ffd966;
+            color: #003b8f;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* small divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, #c2dbff, #ffffff);
+            margin: 1.8rem 0 0.5rem;
+        }
+
+        /* responsive fine-tune */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .note-card {
+                padding: 1.6rem 1.2rem 1.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .story {
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            .term-item {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .term-badge {
+                min-width: auto;
+                align-self: flex-start;
+            }
+            .golden-rule {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.3rem 1.5rem;
+            }
+            .golden-rule p {
+                font-size: 1rem;
+            }
+            .steps-list li {
+                padding-left: 2.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="note-card">
+        <h1>📝 Bus Performance &amp; Architecture <span>Topic 2</span></h1>
+
+        <!-- 1-sentence story -->
+        <div class="story">
+            <strong>The 1-Sentence Story:</strong> To prevent the shared bus from becoming a performance bottleneck or suffering from signal collisions, modern computers use separate buses for memory and I/O, and rely on bus arbitration to manage access among multiple bus masters.
+        </div>
+
+        <!-- definitions -->
+        <h2>📌 Definitions &amp; Key Terms</h2>
+        <div class="terms-grid">
+            <div class="term-item">
+                <div class="term-badge">Bus Bottleneck</div>
+                <div class="term-def">A condition where the bus cannot transfer data fast enough to keep up with the connected components (e.g., a fast CPU waiting on a slow bus).</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Bus Contention</div>
+                <div class="term-def">A situation where multiple bus masters request the bus simultaneously, reducing performance due to the time required to resolve the conflict.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Bus Arbitration</div>
+                <div class="term-def">The process of determining which bus master is allowed to use the bus next, preventing simultaneous access and data corruption.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Arbiter</div>
+                <div class="term-def">The hardware (often the CPU or a dedicated circuit) that selects the next bus master based on a priority scheme.</div>
+            </div>
+        </div>
+
+        <!-- factors affecting bus performance -->
+        <h2>⚡ Factors Affecting Bus Performance</h2>
+        <div class="factor-grid">
+            <div class="factor-card">
+                <h4>Bus Width</h4>
+                <p>Number of data lines (wider = more bits per cycle).</p>
+            </div>
+            <div class="factor-card">
+                <h4>Bus Clock Frequency</h4>
+                <p>Speed of transfers (higher frequency = faster transfers).</p>
+            </div>
+            <div class="factor-card">
+                <h4>Transfer Protocol</h4>
+                <p>How devices coordinate (Synchronous vs. Asynchronous).</p>
+            </div>
+            <div class="factor-card">
+                <h4>Bus Contention</h4>
+                <p>Multiple masters competing for access (requires arbitration).</p>
+                <span class="small-note">arbitration overhead</span>
+            </div>
+        </div>
+
+        <!-- bandwidth formula -->
+        <div class="formula-box">
+            📐 Approximate Bus Bandwidth:  Bandwidth ≈ Bus Width × Transfer Rate
+        </div>
+
+        <!-- architecture comparison -->
+        <h2>🏗️ Bus Architecture Comparison <i>(Exam Favorite)</i></h2>
+        <div class="arch-grid">
+            <div class="arch-card">
+                <h4>🧠 Processor‑Memory Bus</h4>
+                <ul>
+                    <li><strong>Length:</strong> Short (on the same board).</li>
+                    <li><strong>Timing:</strong> Synchronous (high‑speed clock).</li>
+                    <li><strong>Nature:</strong> Proprietary, matched to memory access characteristics.</li>
+                    <li><strong>Goal:</strong> Maximum speed.</li>
+                </ul>
+            </div>
+            <div class="arch-card">
+                <h4>🔌 I/O Bus (Peripheral Bus)</h4>
+                <ul>
+                    <li><strong>Length:</strong> Longer (devices may be meters away).</li>
+                    <li><strong>Timing:</strong> Asynchronous (handshaking).</li>
+                    <li><strong>Nature:</strong> Follows established standards (USB, PCI).</li>
+                    <li><strong>Goal:</strong> Flexibility and compatibility across varying device speeds.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- arbitration process -->
+        <h2>🔄 Arbitration Process</h2>
+        <ol class="steps-list">
+            <li><strong>Masters request the bus.</strong></li>
+            <li><strong>The Arbiter selects one master</strong> (based on priority).</li>
+            <li><strong>The selected master receives access</strong> and performs the transaction.</li>
+            <li><strong>The bus is released</strong> for the next master.</li>
+        </ol>
+
+        <!-- golden rule — arbitration focus (consistent with topic) -->
+        <div class="golden-rule">
+            <div class="shield">🔒 GOLDEN RULE</div>
+            <p><span>Arbitration guarantees</span> only one bus master is active at a time — eliminating collisions and ensuring fair, priority‑based access.</p>
+        </div>
+
+        <!-- subtle divider (styling only) -->
+        <div class="divider"></div>
+    </div>
+</body>
+</html>

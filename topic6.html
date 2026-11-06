@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interrupt-Driven I/O · Exam Notes</title>
+    <style>
+        /* Blue & White theme — clean, exam-ready */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f8fcff 0%, #e6f2ff 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #0a2b4e;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 80, 200, 0.25),
+                        0 6px 18px -8px rgba(0, 60, 130, 0.15),
+                        inset 0 1px 0 #ffffff;
+            border: 1px solid #cde3ff;
+            padding: 2rem 2.2rem 2.4rem;
+            transition: all 0.2s;
+        }
+
+        /* accent bar */
+        .note-card::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #1a6eff;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #003b8f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.45rem;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #1a6eff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(26, 110, 255, 0.3);
+        }
+
+        .story {
+            background: #e9f2ff;
+            border-left: 8px solid #1a6eff;
+            padding: 1.2rem 1.7rem;
+            border-radius: 0 18px 18px 0;
+            margin: 1.5rem 0 1.8rem 0;
+            font-weight: 500;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            color: #0040a0;
+            box-shadow: 0 4px 12px rgba(0, 60, 140, 0.08);
+            transition: 0.1s;
+        }
+
+        .story strong {
+            color: #002b6b;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00337a;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d6ff 20%, #ffffff 100%);
+            border-radius: 2px;
+            min-width: 40px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b4b9e;
+            margin-top: 1.8rem;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 i {
+            font-style: normal;
+            background: #d6e8ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0047b3;
+        }
+
+        /* term list styling */
+        .terms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            background: #f9fcff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border: 1px solid #d0e3ff;
+            transition: 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 80, 180, 0.03);
+        }
+
+        .term-item:hover {
+            background: #edf5ff;
+            border-color: #97c1ff;
+        }
+
+        .term-badge {
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            min-width: 130px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .term-def {
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #002856;
+            font-weight: 450;
+        }
+
+        .term-def strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* key points card */
+        .key-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.2rem 1.5rem 1.4rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 10px 20px -10px #003b8f33;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .key-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.5rem;
+        }
+
+        .key-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .key-card ul li {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #003174;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .key-card ul li::before {
+            content: '▹';
+            color: #1a6eff;
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .key-card ul li strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* identification methods grid */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .method-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b8d6ff;
+            box-shadow: 0 6px 14px -8px rgba(0, 80, 200, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .method-card:hover {
+            border-color: #1a6eff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px #1a6eff66;
+        }
+
+        .method-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .method-card p {
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: #003174;
+        }
+
+        .method-card .speed {
+            display: inline-block;
+            margin-top: 0.6rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            background: #e9f2ff;
+            color: #0047b3;
+        }
+
+        .method-card .speed.slow {
+            background: #fff0e0;
+            color: #8a5a00;
+        }
+
+        .method-card .speed.fast {
+            background: #e3f7e8;
+            color: #006633;
+        }
+
+        /* IE bit highlight */
+        .ie-highlight {
+            background: #f0f7ff;
+            border-radius: 16px;
+            padding: 0.9rem 1.4rem;
+            margin: 1rem 0 0.2rem;
+            border: 1px dashed #7fb3ff;
+            font-weight: 600;
+            color: #00337a;
+            font-size: 0.98rem;
+            box-shadow: 0 4px 10px rgba(0, 80, 200, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem 2rem;
+        }
+
+        .ie-highlight span {
+            background: #1a6eff;
+            color: white;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        /* exception list */
+        .exception-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            margin: 1rem 0 1.2rem;
+        }
+
+        .exception-item {
+            background: #f9fcff;
+            padding: 0.8rem 1.3rem;
+            border-radius: 14px;
+            border-left: 6px solid #1a6eff;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #003174;
+            box-shadow: 0 3px 8px rgba(0, 60, 140, 0.04);
+        }
+
+        .exception-item strong {
+            color: #003b8f;
+        }
+
+        /* exam point (vs polling) */
+        .exam-point {
+            background: #003b8f;
+            color: white;
+            border-radius: 22px;
+            padding: 1.4rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 16px 28px -12px #003b8f99,
+                        inset 0 1px 0 #ffffff40;
+            border: 1px solid #7fb3ff;
+        }
+
+        .exam-point .shield {
+            background: #ffffff20;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #b8d6ff;
+            border: 1px solid #8bb8ff;
+        }
+
+        .exam-point p {
+            font-size: 1.12rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: white;
+            margin: 0;
+        }
+
+        .exam-point p span {
+            background: #ffd966;
+            color: #003b8f;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* small divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, #c2dbff, #ffffff);
+            margin: 1.8rem 0 0.5rem;
+        }
+
+        /* responsive fine-tune */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .note-card {
+                padding: 1.6rem 1.2rem 1.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .story {
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            .term-item {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .term-badge {
+                min-width: auto;
+                align-self: flex-start;
+            }
+            .exam-point {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.3rem 1.5rem;
+            }
+            .exam-point p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="note-card">
+        <h1>📝 Interrupt-Driven I/O <span>Topic 6</span></h1>
+
+        <!-- 1-sentence story -->
+        <div class="story">
+            <strong>The 1-Sentence Story:</strong> Interrupt-driven I/O solves the inefficiency of polling by letting I/O devices alert the CPU via hardware signals only when they need service, allowing the CPU to perform useful computation and overlap I/O with processing.
+        </div>
+
+        <!-- definitions -->
+        <h2>📌 Definitions &amp; Key Terms</h2>
+        <div class="terms-grid">
+            <div class="term-item">
+                <div class="term-badge">Interrupt</div>
+                <div class="term-def">A hardware signal generated by an I/O device to alert the processor that it requires service.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">ISR</div>
+                <div class="term-def">Interrupt Service Routine: the special routine executed by the CPU in response to an interrupt request.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Interrupt Latency</div>
+                <div class="term-def">The time between receiving an interrupt request and starting execution of its ISR.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">INTR</div>
+                <div class="term-def">The interrupt-request control line used by devices to signal the CPU.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Interrupt Nesting</div>
+                <div class="term-def">A higher-priority interrupt is allowed to interrupt the ISR of a lower-priority device.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Vectored Interrupt</div>
+                <div class="term-def">The interrupting device supplies an identifying code (vector) so the CPU can directly find the correct ISR.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Daisy Chain</div>
+                <div class="term-def">Devices share an INTR line; the INTA signal propagates through devices in a chain. The device closest to the CPU has highest priority.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Exception</div>
+                <div class="term-def">An internal event (error, illegal instruction, privilege violation) that disrupts normal execution and transfers control to a service routine.</div>
+            </div>
+        </div>
+
+        <!-- interrupt hardware -->
+        <h2>🔌 Interrupt Hardware</h2>
+        <div class="key-card">
+            <h4>🔹 Shared Line &amp; Open-Collector Outputs</h4>
+            <ul>
+                <li>Multiple devices share a single <code>INTR</code> line.</li>
+                <li><strong>Open-Collector/Open-Drain outputs</strong> allow multiple devices to pull the line LOW (0) without conflict. A pull-up resistor keeps the line HIGH (1) when idle.</li>
+                <li>The CPU must then determine which device interrupted (via polling, vectored interrupts, or daisy chaining).</li>
+            </ul>
+        </div>
+
+        <!-- saving processor state -->
+        <h2>💾 Saving Processor State</h2>
+        <div class="key-card">
+            <h4>🔹 Context Preservation</h4>
+            <ul>
+                <li>The CPU must preserve: <strong>Program Counter (PC)</strong> (address of next instruction, i+1), <strong>Processor Status (PS)</strong> (condition flags, IE bit), and register contents.</li>
+                <li>The ISR ends with a <strong>Return-from-Interrupt</strong> instruction, which restores the saved state and resumes at instruction i+1.</li>
+            </ul>
+        </div>
+
+        <!-- enabling/disabling interrupts -->
+        <h2>🔘 Enabling / Disabling Interrupts</h2>
+        <div class="ie-highlight">
+            <div><span>IE = 1</span> Interrupts enabled.</div>
+            <div><span>IE = 0</span> Interrupts disabled.</div>
+        </div>
+        <div class="key-card" style="margin-top: 0.8rem;">
+            <ul>
+                <li>The <strong>Interrupt-Enable (IE) bit</strong> in the processor status register controls interrupt acceptance.</li>
+                <li>Used to protect critical instruction sequences and ISR execution.</li>
+                <li>Processors may automatically disable interrupts when entering an ISR and restore the previous state on return.</li>
+            </ul>
+        </div>
+
+        <!-- priority and nesting -->
+        <h2>⬆️ Priority and Nesting</h2>
+        <div class="key-card">
+            <h4>🔹 Priority Scheme</h4>
+            <ul>
+                <li>A priority scheme determines which interrupt gets serviced first (<strong>High &gt; Low</strong>).</li>
+                <li>When the CPU starts an ISR, its priority is raised to that of the device.</li>
+                <li>A higher-priority device can interrupt a lower-priority ISR (<strong>nesting</strong>).</li>
+            </ul>
+        </div>
+
+        <!-- identifying the interrupting device -->
+        <h2>🔍 Identifying the Interrupting Device</h2>
+        <div class="methods-grid">
+            <div class="method-card">
+                <h4>Polling</h4>
+                <p>ISR checks status registers of devices one by one.</p>
+                <span class="speed slow">slow</span>
+            </div>
+            <div class="method-card">
+                <h4>Vectored Interrupts</h4>
+                <p>Device supplies a vector code → CPU directly finds ISR address.</p>
+                <span class="speed fast">fast</span>
+            </div>
+            <div class="method-card">
+                <h4>Daisy Chaining</h4>
+                <p>INTA propagates through devices; closest device with a request blocks INTA and supplies its vector. Priority is fixed by physical position.</p>
+                <span class="speed">fixed priority</span>
+            </div>
+        </div>
+        <div class="key-card" style="margin-top: 0.4rem;">
+            <h4>🔹 Priority Groups</h4>
+            <ul>
+                <li>Multiple priority lines combined with daisy chaining within each group for flexibility.</li>
+            </ul>
+        </div>
+
+        <!-- interrupt controller -->
+        <h2>🎛️ Interrupt Controller</h2>
+        <div class="key-card">
+            <h4>🔹 Dedicated Hardware</h4>
+            <ul>
+                <li>Hardware that receives requests, determines the highest-priority one, masks/enables selected interrupts, and provides interrupt information (vector) to the processor.</li>
+            </ul>
+        </div>
+
+        <!-- exceptions -->
+        <h2>⚠️ Exceptions <i>(Key Types)</i></h2>
+        <div class="exception-list">
+            <div class="exception-item"><strong>Error Recovery:</strong> Memory errors, illegal instructions, division by zero.</div>
+            <div class="exception-item"><strong>Debugging:</strong> Trace (exception after every instruction), Breakpoint (Trap/software interrupt).</div>
+            <div class="exception-item"><strong>Privilege Exception:</strong> User program attempts to execute a privileged instruction (executable only in supervisor mode).</div>
+        </div>
+
+        <!-- exam point (vs polling) -->
+        <div class="exam-point">
+            <div class="shield">📌 EXAM POINT</div>
+            <p><span>Polling:</span> CPU waits and wastes time. <span style="background:#ffffff40; color:#fff;">Interrupt:</span> CPU does useful work, device alerts CPU when ready (overlapping computation and I/O).</p>
+        </div>
+
+        <!-- subtle divider (styling only) -->
+        <div class="divider"></div>
+    </div>
+</body>
+</html>

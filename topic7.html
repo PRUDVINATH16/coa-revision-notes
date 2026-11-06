@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Memory Access (DMA) · Exam Notes</title>
+    <style>
+        /* Blue & White theme — clean, exam-ready */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f8fcff 0%, #e6f2ff 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #0a2b4e;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 80, 200, 0.25),
+                        0 6px 18px -8px rgba(0, 60, 130, 0.15),
+                        inset 0 1px 0 #ffffff;
+            border: 1px solid #cde3ff;
+            padding: 2rem 2.2rem 2.4rem;
+            transition: all 0.2s;
+        }
+
+        /* accent bar */
+        .note-card::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #1a6eff;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #003b8f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.45rem;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #1a6eff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(26, 110, 255, 0.3);
+        }
+
+        .story {
+            background: #e9f2ff;
+            border-left: 8px solid #1a6eff;
+            padding: 1.2rem 1.7rem;
+            border-radius: 0 18px 18px 0;
+            margin: 1.5rem 0 1.8rem 0;
+            font-weight: 500;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            color: #0040a0;
+            box-shadow: 0 4px 12px rgba(0, 60, 140, 0.08);
+            transition: 0.1s;
+        }
+
+        .story strong {
+            color: #002b6b;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00337a;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d6ff 20%, #ffffff 100%);
+            border-radius: 2px;
+            min-width: 40px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b4b9e;
+            margin-top: 1.8rem;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 i {
+            font-style: normal;
+            background: #d6e8ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0047b3;
+        }
+
+        /* term list styling */
+        .terms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            background: #f9fcff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border: 1px solid #d0e3ff;
+            transition: 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 80, 180, 0.03);
+        }
+
+        .term-item:hover {
+            background: #edf5ff;
+            border-color: #97c1ff;
+        }
+
+        .term-badge {
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            min-width: 140px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .term-def {
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #002856;
+            font-weight: 450;
+        }
+
+        .term-def strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* key points card */
+        .key-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.2rem 1.5rem 1.4rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 10px 20px -10px #003b8f33;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .key-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.5rem;
+        }
+
+        .key-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .key-card ul li {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #003174;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .key-card ul li::before {
+            content: '▹';
+            color: #1a6eff;
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .key-card ul li strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* register grid */
+        .reg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .reg-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b8d6ff;
+            box-shadow: 0 6px 14px -8px rgba(0, 80, 200, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .reg-card:hover {
+            border-color: #1a6eff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px #1a6eff66;
+        }
+
+        .reg-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .reg-card p {
+            font-size: 0.92rem;
+            line-height: 1.45;
+            color: #003174;
+        }
+
+        /* status bits highlight */
+        .bit-highlight {
+            background: #f0f7ff;
+            border-radius: 16px;
+            padding: 0.9rem 1.4rem;
+            margin: 1rem 0 0.2rem;
+            border: 1px dashed #7fb3ff;
+            font-weight: 600;
+            color: #00337a;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 10px rgba(0, 80, 200, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.8rem;
+        }
+
+        .bit-highlight span {
+            background: #1a6eff;
+            color: white;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        /* operation steps list */
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin: 1.2rem 0 1.5rem;
+            counter-reset: step-counter;
+        }
+
+        .steps-list li {
+            list-style: none;
+            background: #ffffff;
+            padding: 0.85rem 1.4rem 0.85rem 3.2rem;
+            border-radius: 16px;
+            border: 1px solid #cde3ff;
+            font-weight: 500;
+            color: #003174;
+            box-shadow: 0 3px 8px rgba(0, 80, 180, 0.03);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .steps-list li::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 1rem;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px #1a6eff55;
+        }
+
+        .steps-list li strong {
+            color: #00337a;
+            font-weight: 700;
+        }
+
+        /* comparison table */
+        .comp-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            margin: 1.2rem 0 1rem;
+        }
+
+        .comp-table th {
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #00337a;
+            padding: 0.6rem 1rem;
+            background: #e9f2ff;
+            border-radius: 12px;
+        }
+
+        .comp-table th:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .comp-table th:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .comp-table td {
+            background: #ffffff;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            color: #003174;
+            border-top: 1px solid #e3efff;
+            border-bottom: 1px solid #e3efff;
+        }
+
+        .comp-table td:first-child {
+            border-left: 1px solid #e3efff;
+            border-radius: 12px 0 0 12px;
+            font-weight: 600;
+            color: #003b8f;
+        }
+
+        .comp-table td:last-child {
+            border-right: 1px solid #e3efff;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .comp-table tr:hover td {
+            background: #f4f9ff;
+        }
+
+        /* bus arbitration card */
+        .arb-card {
+            background: #f9fcff;
+            border-radius: 18px;
+            padding: 1rem 1.4rem;
+            border-left: 6px solid #1a6eff;
+            margin: 1rem 0 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 60, 140, 0.05);
+        }
+
+        .arb-card ol {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-left: 0;
+            counter-reset: arb-counter;
+        }
+
+        .arb-card ol li {
+            font-size: 0.94rem;
+            line-height: 1.5;
+            color: #003174;
+            padding-left: 1.8rem;
+            position: relative;
+            counter-increment: arb-counter;
+        }
+
+        .arb-card ol li::before {
+            content: counter(arb-counter) ".";
+            position: absolute;
+            left: 0;
+            color: #1a6eff;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .arb-card ol li strong {
+            color: #003b8f;
+        }
+
+        /* exam point (comparison of 3 techniques) */
+        .exam-point {
+            background: #003b8f;
+            color: white;
+            border-radius: 22px;
+            padding: 1.4rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            box-shadow: 0 16px 28px -12px #003b8f99,
+                        inset 0 1px 0 #ffffff40;
+            border: 1px solid #7fb3ff;
+        }
+
+        .exam-point .header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .exam-point .shield {
+            background: #ffffff20;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #b8d6ff;
+            border: 1px solid #8bb8ff;
+        }
+
+        .exam-point .rows {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 1.02rem;
+            font-weight: 500;
+            line-height: 1.5;
+            color: white;
+        }
+
+        .exam-point .rows span.hl {
+            background: #ffd966;
+            color: #003b8f;
+            padding: 0.1rem 0.7rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* small divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, #c2dbff, #ffffff);
+            margin: 1.8rem 0 0.5rem;
+        }
+
+        /* responsive fine-tune */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .note-card {
+                padding: 1.6rem 1.2rem 1.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .story {
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            .term-item {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .term-badge {
+                min-width: auto;
+                align-self: flex-start;
+            }
+            .steps-list li {
+                padding-left: 2.8rem;
+            }
+            .exam-point {
+                padding: 1.3rem 1.5rem;
+            }
+            .exam-point .rows {
+                font-size: 0.95rem;
+            }
+            .comp-table th,
+            .comp-table td {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.85rem;
+            }
+            .comp-table td:first-child,
+            .comp-table td:last-child {
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="note-card">
+        <h1>📝 Direct Memory Access (DMA) <span>Topic 7</span></h1>
+
+        <!-- 1-sentence story -->
+        <div class="story">
+            <strong>The 1-Sentence Story:</strong> DMA is a technique where a dedicated controller transfers blocks of data directly between an I/O device and main memory without continuous CPU involvement, freeing the CPU from repetitive data-movement tasks.
+        </div>
+
+        <!-- definitions -->
+        <h2>📌 Definitions &amp; Key Terms</h2>
+        <div class="terms-grid">
+            <div class="term-item">
+                <div class="term-badge">DMA</div>
+                <div class="term-def">Direct Memory Access: a method that allows a block of data to be transferred directly between an I/O device and memory with minimal processor intervention.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">DMA Controller</div>
+                <div class="term-def">A control circuit associated with the I/O interface that performs memory-transfer tasks on behalf of the processor.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Cycle Stealing</div>
+                <div class="term-def">A DMA mode where the controller obtains the bus for one (or a few) cycles at a time, interweaving its memory accesses with the CPU's.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Burst / Block Mode</div>
+                <div class="term-def">A DMA mode where the controller obtains exclusive access to the bus and transfers the entire block without interruption.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">BR</div>
+                <div class="term-def">Bus Request: signal asserted by the DMA controller to request bus control.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">BG</div>
+                <div class="term-def">Bus Grant: signal asserted by the processor/arbiter to grant the bus.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">BBSY</div>
+                <div class="term-def">Bus Busy: signal asserted by the current bus master to prevent others from using the bus.</div>
+            </div>
+        </div>
+
+        <!-- DMA controller registers -->
+        <h2>🧩 DMA Controller Registers</h2>
+        <div class="reg-grid">
+            <div class="reg-card">
+                <h4>Starting Address</h4>
+                <p>The beginning memory address for the transfer.</p>
+            </div>
+            <div class="reg-card">
+                <h4>Word Count</h4>
+                <p>The number of words/bytes to be transferred.</p>
+            </div>
+            <div class="reg-card">
+                <h4>Status &amp; Control</h4>
+                <p>Holds direction and completion settings.</p>
+            </div>
+        </div>
+        <div class="bit-highlight">
+            <div><span>R/W</span> Direction of transfer (I/O to Memory, or Memory to I/O).</div>
+            <div><span>Done</span> Set to 1 when the block transfer is complete.</div>
+            <div><span>IE</span> Interrupt Enable: if 1, raises an interrupt when done.</div>
+            <div><span>IRQ</span> The flag that triggers the interrupt.</div>
+        </div>
+
+        <!-- DMA controller functions -->
+        <h2>⚙️ DMA Controller Functions <i>(for each word)</i></h2>
+        <div class="key-card">
+            <ul>
+                <li>Provides the memory address.</li>
+                <li>Generates bus control signals.</li>
+                <li>Transfers the data.</li>
+                <li>Increments the memory address.</li>
+                <li>Maintains the word count.</li>
+            </ul>
+        </div>
+
+        <!-- DMA operation steps -->
+        <h2>🔄 DMA Operation Steps</h2>
+        <ol class="steps-list">
+            <li><strong>Initialize:</strong> CPU provides starting address, word count, and direction.</li>
+            <li><strong>Transfer:</strong> DMA controller obtains bus control, transfers data, increments address, decrements word count.</li>
+            <li><strong>Completion:</strong> When word count reaches zero, DMA sets Done flag. If IE is enabled, raises an interrupt.</li>
+        </ol>
+
+        <!-- DMA transfer modes comparison -->
+        <h2>📊 DMA Transfer Modes <i>(Exam Comparison)</i></h2>
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Cycle Stealing</th>
+                    <th>Burst / Block Mode</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bus Access</td>
+                    <td>One/few cycles at a time</td>
+                    <td>Entire block at once</td>
+                </tr>
+                <tr>
+                    <td>CPU Access</td>
+                    <td>Interwoven (short interruptions)</td>
+                    <td>CPU is completely stalled</td>
+                </tr>
+                <tr>
+                    <td>Transfer Speed</td>
+                    <td>Slower</td>
+                    <td>Faster</td>
+                </tr>
+                <tr>
+                    <td>Best For</td>
+                    <td>When CPU must keep running</td>
+                    <td>High-speed block transfers</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- bus arbitration for DMA -->
+        <h2>🔀 Bus Arbitration for DMA</h2>
+        <div class="arb-card">
+            <ol>
+                <li>DMA controller asserts <strong>BR</strong> (Bus Request).</li>
+                <li>Processor responds with <strong>BG</strong> (Bus Grant), often connected in a daisy chain to multiple DMA controllers.</li>
+                <li>DMA waits for <strong>BBSY</strong> to become free (0), then becomes Bus Master and asserts <strong>BBSY</strong>.</li>
+                <li>After transfers, DMA releases the bus, and the processor regains control.</li>
+            </ol>
+        </div>
+
+        <!-- key exam point (comparison of 3 techniques) -->
+        <div class="exam-point">
+            <div class="header">
+                <div class="shield">📌 KEY EXAM POINT</div>
+            </div>
+            <div class="rows">
+                <div><span class="hl">Program-Controlled I/O:</span> CPU waits (polling).</div>
+                <div><span class="hl">Interrupt-Driven I/O:</span> CPU does useful work, device alerts CPU when ready.</div>
+                <div><span class="hl">DMA:</span> Device interface transfers data directly to/from memory, CPU only initiates and is notified at the end.</div>
+            </div>
+        </div>
+
+        <!-- subtle divider (styling only) -->
+        <div class="divider"></div>
+    </div>
+</body>
+</html>

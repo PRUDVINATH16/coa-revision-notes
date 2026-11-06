@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Timing (Synchronous vs. Asynchronous) · Exam Notes</title>
+    <style>
+        /* Blue & White theme — clean, exam-ready */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f8fcff 0%, #e6f2ff 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #0a2b4e;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 80, 200, 0.25),
+                        0 6px 18px -8px rgba(0, 60, 130, 0.15),
+                        inset 0 1px 0 #ffffff;
+            border: 1px solid #cde3ff;
+            padding: 2rem 2.2rem 2.4rem;
+            transition: all 0.2s;
+        }
+
+        /* accent bar */
+        .note-card::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: #1a6eff;
+            border-radius: 20px;
+            margin-bottom: 1.6rem;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #003b8f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.45rem;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #1a6eff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 10px rgba(26, 110, 255, 0.3);
+        }
+
+        .story {
+            background: #e9f2ff;
+            border-left: 8px solid #1a6eff;
+            padding: 1.2rem 1.7rem;
+            border-radius: 0 18px 18px 0;
+            margin: 1.5rem 0 1.8rem 0;
+            font-weight: 500;
+            font-size: 1.07rem;
+            line-height: 1.6;
+            color: #0040a0;
+            box-shadow: 0 4px 12px rgba(0, 60, 140, 0.08);
+            transition: 0.1s;
+        }
+
+        .story strong {
+            color: #002b6b;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #00337a;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d6ff 20%, #ffffff 100%);
+            border-radius: 2px;
+            min-width: 40px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b4b9e;
+            margin-top: 1.8rem;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 i {
+            font-style: normal;
+            background: #d6e8ff;
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0047b3;
+        }
+
+        /* term list styling */
+        .terms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            background: #f9fcff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            border: 1px solid #d0e3ff;
+            transition: 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 80, 180, 0.03);
+        }
+
+        .term-item:hover {
+            background: #edf5ff;
+            border-color: #97c1ff;
+        }
+
+        .term-badge {
+            background: #1a6eff;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            min-width: 130px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(26, 110, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .term-def {
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #002856;
+            font-weight: 450;
+        }
+
+        .term-def strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        /* key points card */
+        .key-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.2rem 1.5rem 1.4rem;
+            border: 2px solid #c2dbff;
+            box-shadow: 0 10px 20px -10px #003b8f33;
+            margin: 1.2rem 0 1.4rem;
+        }
+
+        .key-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #003b8f;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e3efff;
+            padding-bottom: 0.5rem;
+        }
+
+        .key-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .key-card ul li {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #003174;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .key-card ul li::before {
+            content: '▹';
+            color: #1a6eff;
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .key-card ul li strong {
+            color: #00337a;
+            font-weight: 600;
+        }
+
+        .formula-box {
+            background: #f0f7ff;
+            border-radius: 16px;
+            padding: 0.9rem 1.4rem;
+            margin: 1rem 0 0.2rem;
+            border: 1px dashed #7fb3ff;
+            font-weight: 600;
+            color: #00337a;
+            font-size: 0.98rem;
+            box-shadow: 0 4px 10px rgba(0, 80, 200, 0.05);
+        }
+
+        .formula-box span {
+            background: #1a6eff;
+            color: white;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-left: 8px;
+        }
+
+        /* comparison table (clean) */
+        .comp-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            margin: 1.2rem 0 1rem;
+        }
+
+        .comp-table th {
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #00337a;
+            padding: 0.6rem 1rem;
+            background: #e9f2ff;
+            border-radius: 12px;
+        }
+
+        .comp-table th:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .comp-table th:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .comp-table td {
+            background: #ffffff;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            color: #003174;
+            border-top: 1px solid #e3efff;
+            border-bottom: 1px solid #e3efff;
+        }
+
+        .comp-table td:first-child {
+            border-left: 1px solid #e3efff;
+            border-radius: 12px 0 0 12px;
+            font-weight: 600;
+            color: #003b8f;
+        }
+
+        .comp-table td:last-child {
+            border-right: 1px solid #e3efff;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .comp-table tr:hover td {
+            background: #f4f9ff;
+        }
+
+        /* golden rule — timing coordination focus */
+        .golden-rule {
+            background: #003b8f;
+            color: white;
+            border-radius: 22px;
+            padding: 1.4rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 16px 28px -12px #003b8f99,
+                        inset 0 1px 0 #ffffff40;
+            border: 1px solid #7fb3ff;
+        }
+
+        .golden-rule .shield {
+            background: #ffffff20;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #b8d6ff;
+            border: 1px solid #8bb8ff;
+        }
+
+        .golden-rule p {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: white;
+            margin: 0;
+        }
+
+        .golden-rule p span {
+            background: #ffd966;
+            color: #003b8f;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* small divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, #c2dbff, #ffffff);
+            margin: 1.8rem 0 0.5rem;
+        }
+
+        /* responsive fine-tune */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .note-card {
+                padding: 1.6rem 1.2rem 1.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .story {
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            .term-item {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .term-badge {
+                min-width: auto;
+                align-self: flex-start;
+            }
+            .golden-rule {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.3rem 1.5rem;
+            }
+            .golden-rule p {
+                font-size: 1rem;
+            }
+            .comp-table th,
+            .comp-table td {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.85rem;
+            }
+            .comp-table td:first-child,
+            .comp-table td:last-child {
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="note-card">
+        <h1>📝 Bus Timing (Synchronous vs. Asynchronous) <span>Topic 3</span></h1>
+
+        <!-- 1-sentence story -->
+        <div class="story">
+            <strong>The 1-Sentence Story:</strong> Bus timing dictates how masters and slaves coordinate data transfers, either by using a strict common clock (Synchronous) for speed, or a flexible back-and-forth handshake (Asynchronous) to accommodate varying device speeds and distances.
+        </div>
+
+        <!-- definitions -->
+        <h2>📌 Definitions &amp; Key Terms</h2>
+        <div class="terms-grid">
+            <div class="term-item">
+                <div class="term-badge">Synchronous Bus</div>
+                <div class="term-def">A bus that uses a common clock signal; requests and responses occur only at specific clock edges.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Asynchronous Bus</div>
+                <div class="term-def">A bus that uses a handshake protocol (Master-ready / Slave-ready) instead of a clock to coordinate transfers.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Handshake</div>
+                <div class="term-def">A back-and-forth signaling protocol where the master signals it is ready, and the slave signals it has completed the operation.</div>
+            </div>
+            <div class="term-item">
+                <div class="term-badge">Clock Skew</div>
+                <div class="term-def">A problem in synchronous buses where the clock signal arrives at different components at slightly different times due to propagation delay over long wires.</div>
+            </div>
+        </div>
+
+        <!-- synchronous bus key points -->
+        <h2>⏱️ Synchronous Bus <i>(Key Points)</i></h2>
+        <div class="key-card">
+            <h4>🔹 Operation &amp; Limitations</h4>
+            <ul>
+                <li><strong>Operation:</strong> Master places address/command at t₀, slave places data at t₁, master strobes data at t₂.</li>
+                <li><strong>Single-Cycle Limitation:</strong> Transfer must finish in one clock cycle. The clock period must accommodate the slowest device + propagation delay + setup time.</li>
+            </ul>
+            <div class="formula-box">
+                ⏳ T<sub>min</sub> = delay + slowest device response + propagation + margin <span>clock period</span>
+            </div>
+            <ul style="margin-top: 1rem;">
+                <li><strong>Major Problems:</strong> Clock skew, forces all devices to run at the speed of the slowest device, no error detection (master assumes data is ready).</li>
+                <li><strong>Solution:</strong> Multiple-cycle transfers (using a high-frequency clock and a <code>Slave-ready</code> control signal to stretch the transfer across cycles).</li>
+                <li><strong>Use Case:</strong> Processor-Memory Bus (short, fast, predictable).</li>
+            </ul>
+        </div>
+
+        <!-- asynchronous bus key points -->
+        <h2>🔄 Asynchronous Bus <i>(Key Points)</i></h2>
+        <div class="key-card">
+            <h4>🔹 Handshake Protocol &amp; Sequence</h4>
+            <ul>
+                <li><strong>Control Lines:</strong> <code>Master-ready</code> (address/command is valid) and <code>Slave-ready</code> (data/operation is ready).</li>
+                <li><strong>Operation Sequence:</strong> Master places address/command → asserts <code>Master-ready</code> → Slave places data → asserts <code>Slave-ready</code> → Master strobes data and removes signals → Slave removes data/signals.</li>
+                <li><strong>Advantages:</strong> Automatically accommodates varying delays and speeds; eliminates clock skew; highly reliable.</li>
+                <li><strong>Disadvantages:</strong> Slower than synchronous due to "two round-trip delays" (handshake overhead).</li>
+                <li><strong>Use Case:</strong> I/O Bus (longer, variable speeds, connects diverse peripherals).</li>
+            </ul>
+        </div>
+
+        <!-- comparison table -->
+        <h2>📊 Comparison <i>(Exam Table)</i></h2>
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Synchronous</th>
+                    <th>Asynchronous</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Control</td>
+                    <td>Clock-controlled</td>
+                    <td>Handshake-controlled</td>
+                </tr>
+                <tr>
+                    <td>Speed</td>
+                    <td>Fast</td>
+                    <td>Slower</td>
+                </tr>
+                <tr>
+                    <td>Flexibility</td>
+                    <td>Rigid</td>
+                    <td>Flexible</td>
+                </tr>
+                <tr>
+                    <td>Distance</td>
+                    <td>Short distance</td>
+                    <td>Longer distance</td>
+                </tr>
+                <tr>
+                    <td>Typical Use</td>
+                    <td>CPU-Memory</td>
+                    <td>I/O Peripherals</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- golden rule — timing coordination focus -->
+        <div class="golden-rule">
+            <div class="shield">🔒 GOLDEN RULE</div>
+            <p><span>Timing coordination</span> ensures every transfer is reliable — synchronous for speed and predictability, asynchronous for flexibility and distance.</p>
+        </div>
+
+        <!-- subtle divider (styling only) -->
+        <div class="divider"></div>
+    </div>
+</body>
+</html>
